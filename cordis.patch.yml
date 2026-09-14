@@ -1,0 +1,7 @@
+# dsh-dbq bundle patch
+#
+# 在所有官方层之后插入本插件 row：宿主半 lib/index.js 注册模型工具与
+# dsh-dbq 设置命名空间；浏览器半 lib/client.js 通过 exports["./client"] 加载。
+- insert:
+    - id: tool-dbq
+      name: 'dsh-dbq'

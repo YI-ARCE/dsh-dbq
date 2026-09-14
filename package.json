@@ -1,0 +1,52 @@
+{
+  "name": "dsh-dbq",
+  "description": "DSH 插件：数据库连接查询——4 个模型工具（db_connections/db_tables/db_describe/db_query）+ 设置页 + 查询结果卡片，内置 Go 网关 dbq.exe 执行只读 SQL（Windows）",
+  "version": "0.2.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    }
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [],
+      "platform": "web"
+    }
+  },
+  "files": [
+    "lib",
+    "vendor",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "database",
+    "sql",
+    "mysql",
+    "postgres",
+    "sqlite"
+  ],
+  "os": [
+    "win32"
+  ],
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.2"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YI-ARCE/dsh-dbq.git"
+  }
+}
