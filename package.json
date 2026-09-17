@@ -1,7 +1,7 @@
 {
   "name": "dsh-dbq",
   "description": "DSH 插件：数据库连接查询——4 个模型工具（db_connections/db_tables/db_describe/db_query）+ 设置页 + 查询结果卡片，内置 Go 网关 dbq.exe 执行只读 SQL（Windows）",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "main": "lib/index.js",
   "exports": {

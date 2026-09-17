@@ -1,6 +1,6 @@
 # dsh-dbq
 
-[DSH](https://github.com/deepseek-ai/deepseek-harness) 插件：数据库连接查询。在对话里通过 4 个模型工具（`db_connections` / `db_tables` / `db_describe` / `db_query`）探索并查询数据库，查询结果在界面渲染为表格卡片，输入框 `#db:` / `@db:` 触发表名补全。执行层是单文件 Go 网关 `dbq.exe`（纯 Go 驱动，无 CGO），支持 **MySQL / PostgreSQL / SQLite**。
+[DSH](https://github.com/deepseek-ai/deepseek-harness) 插件：数据库连接查询。在对话里通过 4 个模型工具（`db_connections` / `db_tables` / `db_describe` / `db_query`）探索并查询数据库，查询结果在界面渲染为表格卡片；输入框 `@` 触发表引用选择器，先列连接、Tab/回车进入后再选表（官方 @文件 同款 drill 交互）。执行层是单文件 Go 网关 `dbq.exe`（纯 Go 驱动，无 CGO），支持 **MySQL / PostgreSQL / SQLite**。
 
 > **仅支持 Windows**（网关二进制为 `dbq.exe`）。
 
@@ -53,7 +53,7 @@ boot graph 在启动时组装，插件、模型工具与设置页都在重启后
 
 ## 使用
 
-对话里直接说，或用输入框 `#` / `@` 触发表名补全：
+对话里直接说；或在输入框敲 `@` 打开表引用选择器：第一级列出启用的**连接**，Tab / 回车（或点行尾箭头）进入某个连接后第二级列出该库的**表**，顶部面包屑可返回上级；也可以直接输入 `连接.` 前缀（如 `@shop-mysql.`）直达该库的表列表。查询匹配不到任何连接名时，回退为跨连接的表名搜索。选中后插入表标签，发送为 `#db:连接[.schema].表` 记号；输入框左侧的数据库按钮等价于替你敲了一个 `@`。
 
 > 查一下 shop-mysql 里订单量前十的用户
 
@@ -89,7 +89,7 @@ dsh plugin --profile web remove dsh-dbq
 | 文件 | 作用 |
 |---|---|
 | `lib/index.js` | 宿主半：设置命名空间（schemastery）+ 4 个模型工具 + `/dbq-api`（表清单、网关状态） |
-| `lib/client.js` | 客户端半（预构建 bundle）：设置页（连接管理 + 网关状态卡）+ `db_query` 表格卡片 |
+| `lib/client.js` | 客户端半（预构建 bundle）：设置页（连接管理 + 网关状态卡）+ `db_query` 表格卡片 + `@` 表引用选择器（连接 → 表 两级 drill） |
 | `vendor/dbq.exe` | 随包分发的 Go 网关（Windows x64）；更新网关后需重新发布插件版本 |
 | `cordis.patch.yml` | bundle patch：官方层之后插入本插件 row |
 
