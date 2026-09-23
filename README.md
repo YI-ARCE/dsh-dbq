@@ -44,12 +44,12 @@ boot graph 在启动时组装，插件、模型工具与设置页都在重启后
 |---|---|
 | 连接 id | 对话中引用的名字，如 `shop-mysql` |
 | 类型 | MySQL（3306）/ PostgreSQL（5432）/ SQLite（database 填文件路径） |
-| 密码来源 | `inline` 明文存本机 settings.yaml（默认）；`env` 网关进程环境变量；`credential` DSH 凭据库（ref 默认 `dbq/<连接id>`，经 `DBQ_PASSWORD_<ID>` 注入网关） |
+| 密码来源 | `inline` 明文存当前 profile 的 `cordis.patch.yml`（默认）；`env` 网关进程环境变量；`credential` DSH 凭据库（ref 默认 `dbq/<连接id>`，经 `DBQ_PASSWORD_<ID>` 注入网关） |
 | 只读 | 默认开；语句白名单只放行单条 `SELECT / WITH / SHOW / EXPLAIN / DESC` |
 | 禁止表 | `denyTables` 词法黑名单，逗号分隔，如 `users.password_hash` |
 | 限额 | 行数 / 超时可按连接覆盖全局默认（默认 200 行 / 8s / 单元格 2000 字符 / 结果 256KB） |
 
-保存即时生效（设置 `applies: live`），下一条消息即可使用。
+保存即时生效：设置页通过 `configForms` 修改 `tool-dbq` 条目的实时 Config，并持久化到当前 profile 的 Cordis patch。升级自旧版时，请将备份 `settings.yaml.imported` 的 `dsh-dbq` 段迁到 `tool-dbq` 的 `config`；不要删除备份。
 
 ## 使用
 
@@ -82,13 +82,13 @@ boot graph 在启动时组装，插件、模型工具与设置页都在重启后
 dsh plugin --profile web remove dsh-dbq
 ```
 
-（settings.yaml 里的 `dsh-dbq:` 段与 `%USERPROFILE%\.dsh\dbq\` 下手动放置的网关不会自动删除，可手动清理。）
+（当前 profile 的插件配置不会随插件卸载自动清除；`%USERPROFILE%\.dsh\dbq\` 下手动放置的网关也不会自动删除。）
 
 ## 开发
 
 | 文件 | 作用 |
 |---|---|
-| `lib/index.js` | 宿主半：设置命名空间（schemastery）+ 4 个模型工具 + `/dbq-api`（表清单、网关状态） |
+| `lib/index.js` | 宿主半：实时 Config（schemastery）+ 4 个模型工具 + `/dbq-api`（表清单、网关状态） |
 | `lib/client.js` | 客户端半（预构建 bundle）：设置页（连接管理 + 网关状态卡）+ `db_query` 表格卡片 + `@` 表引用选择器（连接 → 表 两级 drill） |
 | `vendor/dbq.exe` | 随包分发的 Go 网关（Windows x64）；更新网关后需重新发布插件版本 |
 | `cordis.patch.yml` | bundle patch：官方层之后插入本插件 row |
