@@ -1,6 +1,6 @@
 # dsh-dbq
 
-[DSH](https://github.com/deepseek-ai/deepseek-harness) 插件：数据库连接查询。在对话里通过 4 个模型工具（`db_connections` / `db_tables` / `db_describe` / `db_query`）探索并查询数据库，查询结果在界面渲染为表格卡片；输入框 `@` 触发表引用选择器，先列连接、Tab/回车进入后再选表（官方 @文件 同款 drill 交互）。执行层是单文件 Go 网关 `dbq.exe`（纯 Go 驱动，无 CGO），支持 **MySQL / PostgreSQL / SQLite**。
+[DSH](https://github.com/deepseek-ai/deepseek-harness) 插件：数据库连接查询与受控写入。在对话里通过 5 个模型工具（`db_connections` / `db_tables` / `db_describe` / `db_query` / `db_write`）操作数据库；输入框 `@` 提供表引用选择器。执行层是单文件 Go 网关 `dbq.exe`，支持 **MySQL / PostgreSQL / SQLite**。
 
 > **仅支持 Windows**（网关二进制为 `dbq.exe`）。
 
@@ -45,7 +45,8 @@ boot graph 在启动时组装，插件、模型工具与设置页都在重启后
 | 连接 id | 对话中引用的名字，如 `shop-mysql` |
 | 类型 | MySQL（3306）/ PostgreSQL（5432）/ SQLite（database 填文件路径） |
 | 密码来源 | `inline` 明文存当前 profile 的 `cordis.patch.yml`（默认）；`env` 网关进程环境变量；`credential` DSH 凭据库（ref 默认 `dbq/<连接id>`，经 `DBQ_PASSWORD_<ID>` 注入网关） |
-| 只读 | 默认开；语句白名单只放行单条 `SELECT / WITH / SHOW / EXPLAIN / DESC` |
+| 只读 | 默认开；`db_query` 始终只读，与此设置无关 |
+| 允许模型写入 | 默认关闭；需同时关闭“只读”，执行还要符合当前 DSH 会话权限预设 |
 | 禁止表 | `denyTables` 词法黑名单，逗号分隔，如 `users.password_hash` |
 | 限额 | 行数 / 超时可按连接覆盖全局默认（默认 200 行 / 8s / 单元格 2000 字符 / 结果 256KB） |
 
@@ -58,6 +59,8 @@ boot graph 在启动时组装，插件、模型工具与设置页都在重启后
 > 查一下 shop-mysql 里订单量前十的用户
 
 模型会依次 `db_connections` → `db_tables` / `db_describe` → `db_query`，查询结果以表格卡片展示，超限截断会标记 `truncated`。
+
+写入时使用独立 `db_write`：仅支持单表 `INSERT INTO ... VALUES`、带 `WHERE` 的 `UPDATE` / `DELETE`，返回 `rowsAffected`、耗时及驱动支持时的 `lastInsertId`。不支持 DDL、UPSERT、子查询、`RETURNING`、注释、引号标识符或多语句。连接需启用、关闭只读并开启“允许模型写入”；随后遵循 DSH 现有会话预设：完全权限自动执行、工作区权限请求原生审批、只读权限拒绝。未知或不匹配的权限组合默认拒绝。设置开关不会自动更改已有连接，请为数据库账号配置最小写权限；`WHERE` 要求仅是防误操作措施，并不能保证影响行数上限。
 
 ## 安全模型（网关强制）
 
@@ -88,7 +91,7 @@ dsh plugin --profile web remove dsh-dbq
 
 | 文件 | 作用 |
 |---|---|
-| `lib/index.js` | 宿主半：实时 Config（schemastery）+ 4 个模型工具 + `/dbq-api`（表清单、网关状态） |
+| `lib/index.js` | 宿主半：实时 Config（schemastery）+ 5 个模型工具 + `/dbq-api`（表清单、网关状态） |
 | `lib/client.js` | 客户端半（预构建 bundle）：设置页（连接管理 + 网关状态卡）+ `db_query` 表格卡片 + `@` 表引用选择器（连接 → 表 两级 drill） |
 | `vendor/dbq.exe` | 随包分发的 Go 网关（Windows x64）；更新网关后需重新发布插件版本 |
 | `cordis.patch.yml` | bundle patch：官方层之后插入本插件 row |
